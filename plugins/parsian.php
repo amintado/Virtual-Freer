@@ -43,7 +43,7 @@
 			'status' => $status
 	    );
 		$sendParams = array($params);
-		$soapclient = new nusoap_client('https://www.pec24.com/pecpaymentgateway/eshopservice.asmx?wsdl', 'wsdl');
+		$soapclient = new nusoap_client('https://www.pecco24.com/pecpaymentgateway/eshopservice.asmx?wsdl', 'wsdl');
 		$res 		= $soapclient->call('PinPaymentRequest', $sendParams);
 		$authority 	= $res['authority'];
 		$status 	= $res['status'];
@@ -52,7 +52,7 @@
 			$update[payment_rand]	= $authority;
 			$sql = $db->queryUpdate('payment', $update, 'WHERE `payment_rand` = "'.$order_id.'" LIMIT 1;');
 			$db->execute($sql);
-			header('location:https://www.pec24.com/pecpaymentgateway/?au='.$authority);
+			header('location:https://www.pecco24.com/pecpaymentgateway/?au='.$authority);
 			exit;
 		}
 		else
@@ -88,7 +88,7 @@
 					//-- چک شود که پرداخت مربوط به کد در چه حالیه
 					include_once('include/libs/nusoap.php');
 					$pin 		= $data[pin];
-					$client 	= new nusoap_client('https://www.pec24.com/pecpaymentgateway/eshopservice.asmx?wsdl', 'wsdl');
+					$client 	= new nusoap_client('https://www.pecco24.com/pecpaymentgateway/eshopservice.asmx?wsdl', 'wsdl');
 					$status 	= 1;   // default status
 					$params 	= array(
 					        'pin' 		=> $pin ,
