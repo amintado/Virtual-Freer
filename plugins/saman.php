@@ -19,9 +19,9 @@
 	$pluginData[saman][author][email] = 'hossin@gmail.com';
 	
 	//-- فیلدهای تنظیمات پلاگین
-	$pluginData[saman][field][config][1][title] = 'مرچنت';
+	$pluginData[saman][field][config][1][title] = 'کد پذیرنده';
 	$pluginData[saman][field][config][1][name] = 'merchant';
-	$pluginData[saman][field][config][2][title] = 'کلمه عبور';
+	$pluginData[saman][field][config][2][title] = 'رمز پذیرنده';
 	$pluginData[saman][field][config][2][name] = 'password';
 	
 	//-- تابع انتقال به دروازه پرداخت
@@ -42,12 +42,12 @@
 		$ResNum	= $post['ResNum'];
 		$RefNum	= $post['RefNum'];
 		$State	= $post['State'];
-		if (strlen($RefNum) == 20)
+		if (isset($RefNum))
 		{
 			include_once('include/libs/nusoap.php');
 			$merchantID = trim($data[merchant]);
 			$password	= $data[password];
-			$soapclient = new nusoap_client('https://Acquirer.sb24.com/ref-payment/ws/ReferencePayment?WSDL','wsdl');
+			$soapclient = new nusoap_client('https://acquirer.samanepay.com/payments/referencepayment.asmx?WSDL','wsdl');
 			$soapProxy	= $soapclient->getProxy() ;
 			$amount		= $soapProxy->VerifyTransaction($RefNum,$merchantID);
 			//-- پرداخت کاملا موفق بوده
@@ -84,7 +84,7 @@
 			else
 			{
 				$output[status]	= 0;
-				$output[message]= 'پرداخت تکمیل نشده است.';
+				$output[message]= 'پرداخت تکمیل نشده است.'.$amount;
 			}
 		}
 		else

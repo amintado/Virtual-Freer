@@ -48,7 +48,7 @@
 <body onLoad="submit_form();">
 <div id="main">
 <p>در حال اتصال به بانک سامان</p></div>
-	<form name="myform" action="https://acquirer.sb24.com/CardServices/controller" method="POST">
+	<form name="myform" action="https://acquirer.samanepay.com/Payment.aspx" method="POST">
 		<input type="hidden" id="Amount" name="Amount" value="{$data.amount}">
 		<input type="hidden" id="MID" name="MID" value="{$data.merchant}">
 		<input type="hidden" id="ResNum" name="ResNum" value="{$data.invoice_id}">
