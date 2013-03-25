@@ -14,7 +14,7 @@
 	$pluginData[freersms][name] = 'پیامک محصول توسط Freer SMS';
 	$pluginData[freersms][uniq] = 'freersms';
 	$pluginData[freersms][description] = 'ارسال اطلاعات خرید به موبایل کاربر با پنل رایگان';
-	$pluginData[freersms][note] = 'برای تهیه رایگان پنل و ارسال پیامک به وب سایت <a href="http://sms.freer.ir" style="color:#FF7200">Freer SMS</a> مراجعه کنید.';
+	$pluginData[freersms][note] = 'برای تهیه رایگان پنل و ارسال پیامک به وب سایت <a href="http://sms.freer.ir">Freer SMS</a> مراجعه کنید.';
 	$pluginData[freersms][author][name] = 'Freer';
 	$pluginData[freersms][author][url] = 'http://sms.freer.ir';
 	$pluginData[freersms][author][email] = 'sms@freer.ir';
