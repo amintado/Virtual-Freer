@@ -1,14 +1,14 @@
 ﻿<?
-	$pluginData[shetab_direct_Parsian][type] = 'payment';
-	$pluginData[shetab_direct_Parsian][name] = 'پارسیان';
-	$pluginData[shetab_direct_Parsian][uniq] = 'shetab_direct_Parsian';
-	$pluginData[shetab_direct_Parsian][description] = 'درگاه پرداخت اینترنتی <a href="http://www.shetab.biz" target=_blank">شتاب‌</a>';
-	$pluginData[shetab_direct_Parsian][author][name] = 'Danesh Pajohan';
-	$pluginData[shetab_direct_Parsian][author][url] = 'http://www.shetab.biz';
-	$pluginData[shetab_direct_Parsian][author][email] = 'info@shetab.biz';
+	$pluginData[shetab_direct_parsian][type] = 'payment';
+	$pluginData[shetab_direct_parsian][name] = 'پارسیان';
+	$pluginData[shetab_direct_parsian][uniq] = 'shetab_direct_parsian';
+	$pluginData[shetab_direct_parsian][description] = 'درگاه پرداخت اینترنتی <a href="http://www.shetab.us" target=_blank">شتاب‌</a>';
+	$pluginData[shetab_direct_parsian][author][name] = 'Danesh Pajohan';
+	$pluginData[shetab_direct_parsian][author][url] = 'http://www.shetab.us';
+	$pluginData[shetab_direct_parsian][author][email] = 'info@shetab.us';
 	
-	$pluginData[shetab_direct_Parsian][field][config][1][title] = 'کد پذیرنده';
-	$pluginData[shetab_direct_Parsian][field][config][1][name] = 'merchantID';
+	$pluginData[shetab_direct_parsian][field][config][1][title] = 'کد پذیرنده';
+	$pluginData[shetab_direct_parsian][field][config][1][name] = 'merchantID';
 
 	function senddata($url,$id,$order_id,$amount,$redirect){
 		$ch = curl_init();
@@ -20,19 +20,19 @@
 		curl_close($ch);
 		return $res;
 	}	
-	function gateway__shetab_direct_Parsian($data)
+	function gateway__shetab_direct_parsian($data)
 	{
 		global $config,$smarty,$db;
 		$id = $data[merchantID];
 		$amount = $data[amount];
 		$redirect = $data[callback];
 		$order_id= $data[invoice_id];
-		$url = 'http://shetab.biz/webservice/index.php';
+		$url = 'http://shetab.us/webservice/index.php';
 		$result = senddata($url,$id,$order_id,$amount,$redirect);
 		
 		if ($result > 0 && is_numeric($result))
 		{
-		$go = "http://shetab.biz/webservice/go.php?id=$result";
+		$go = "http://shetab.us/webservice/go.php?id=$result";
 		header("Location: $go");
 		exit;
 		}
@@ -40,7 +40,7 @@
 		{
 		//-- نمایش خطا
 		$data[title] = 'خطای سیستم';
-		$data[message] = '<font color="red">در ارتباط با درگاه Shetab.biz مشکلی به وجود آمده است. لطفا مطمئن شوید کد MerchantID خود را به درستی در قسمت مدیریت وارد کرده اید.</font> شماره خطا: '.$result.'<br /><a href="index.php" class="button">بازگشت</a>';
+		$data[message] = '<font color="red">در ارتباط با درگاه shetab.us مشکلی به وجود آمده است. لطفا مطمئن شوید کد MerchantID خود را به درستی در قسمت مدیریت وارد کرده اید.</font> شماره خطا: '.$result.'<br /><a href="index.php" class="button">بازگشت</a>';
 		switch(intval($result)){
 			case -1:$data[message] .='<br> شناسه MerchantID صحيح نمي باشد.';break;
 			case -2:$data[message] .='<br> مقدار Amount مبلغ قابل پرداخت صحيح نمي باشد';break;
@@ -58,7 +58,7 @@
 	}
 	
 	//-- تابع بررسی وضعیت پرداخت
-	function callback__shetab_direct_Parsian($data)
+	function callback__shetab_direct_parsian($data)
 	{
 		global $db,$post;
 		
@@ -76,7 +76,7 @@
 		{
 			$amount = $payment[payment_amount];
 			///////////////////
-			$url = 'http://www.shetab.biz/webservice/verify.php';
+			$url = 'http://www.shetab.us/webservice/verify.php';
 			$fields = array(
            		 'resnum'=>urlencode($resCode),
           		  'refnum'=>urlencode($refID),
