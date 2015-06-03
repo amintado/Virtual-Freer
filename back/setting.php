@@ -10,6 +10,7 @@
   as published by the Free Software Foundation.
 */
 	include '../include/configuration.php';
+
 if (!check_login())//------------------------------------------ چک کردن لاگین بودن ادمین
 {
 	header('location:logout.php');
@@ -142,7 +143,7 @@ function config_form ($data) {
 ?>
 	<div class="top-bar">
 		<h1>تنظیمات</h1>
-		<div class="breadcrumbs"><a href="index.php">خانه</a> / <a href="config.php">تنظیمات</a> / تنظیمات اصلی</div>
+		<div class="breadcrumbs"><a href="index.php">خانه</a> / <a href="setting.php">تنظیمات</a> / تنظیمات اصلی</div>
 	</div><br />
 	<div class="select-bar">
 	</div>
@@ -167,7 +168,7 @@ function config_form ($data) {
 	<dt class="title"><label for="admin_username">نام‌کاربری‌ مدیر:</label></dt>
 	<dt><input type="text" name="admin_username" id="admin_username" class="field form" dir="ltr" value="<?=$data[config_admin_username]?>" size="60"></dt>
 	<dt class="title"><label for="admin_password">کلمه عبور فعلی:</label></dt>
-	<dt><input type="password" name="admin_password" id="admin_password" class="field form" dir="ltr" value="" size="60"></dt>
+	<dt><input type="password" name="admin_password" id="admin_password" class="field form" dir="ltr" value="" size="60" autocomplete="off"></dt>
 	<dt class="title"><label for="password">کلمه عبور جدید</label></dt>
 	<dt><input type="password" name="password" id="password" class="field form" dir="ltr" value="" size="60"></dt>
 	<dt class="title"><label for="confirm_password">تکرار کلمه عبور جدید:</label></dt>
@@ -186,7 +187,7 @@ function plugin_form ($plugin)
 ?>
 	<div class="top-bar">
 		<h1>تنظیمات</h1>
-		<div class="breadcrumbs"><a href="index.php">خانه</a> / <a href="config.php">تنظیمات</a> / <?=$plugin[name]?></div>
+		<div class="breadcrumbs"><a href="index.php">خانه</a> / <a href="setting.php">تنظیمات</a> / <?=$plugin[name]?></div>
 	</div><br />
 	<div class="select-bar">
 	</div>

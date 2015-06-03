@@ -120,14 +120,14 @@ function statistics ()
 <?
 }
 
-//------------------------------- گزارش فروش
+//------------------------------- گزارش فروش دیتابیس محلی
 function report ($cards)
 {
 	global $config,$db,$post;
 ?>
 	<div class="top-bar">
-	<h1>گزارش فروش</h1>
-		<div class="breadcrumbs"><a href="index.php">خانه</a> / <a href="statistics.php">آمار</a> / گزارش فروش</div>
+	<h1>گزارش فروش دیتابیس محلی</h1>
+		<div class="breadcrumbs"><a href="index.php">خانه</a> / <a href="statistics.php">آمار</a> / گزارش فروش دیتابیس محلی</div>
 	</div>
 	<div class="select-bar-border">
 	<b>انتخاب بازه:</b><br />

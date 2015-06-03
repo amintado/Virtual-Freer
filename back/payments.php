@@ -20,8 +20,15 @@ if (!check_login())//------------------------------------------ چک کردن ل
 	
 if (($request[action] == 'view') AND (check_payment_exist($request[id])))//-------------------------------------- نمایش جزئیات
 {
-	$sql 	= 'SELECT * FROM `payment` WHERE `payment_id` = "'.$request[id].'" ORDER BY payment_id LIMIT 1;';
+	$sql 	= 'SELECT * FROM `payment` JOIN `product` ON  `payment`.`payment_product` = `product`.`product_id` WHERE `payment_id` = "'.$request[id].'" ORDER BY payment_id LIMIT 1;';
 	$data 	= $db->fetch($sql);
+	
+	if($data['product_provider'] == 'parsyar')
+	{
+		include_once('../include/libs/parsyar.class.php');
+		$parsyar = new parsyar();
+		$data['parsyar'] = $parsyar->follow_up($request[id]);
+	}
 
 	include 'template/header.php';
 	payment_form($data);
@@ -53,6 +60,31 @@ elseif ($request[action] == 'list')//-------------------------------------------
 	{
 		$query			= 'SELECT * FROM `payment` WHERE `payment_email` LIKE "%'.$request[keyword].'%" OR `payment_mobile` LIKE "%'.$request[keyword].'%" OR `payment_amount` LIKE "%'.$request[keyword].'%" OR `payment_res_num` LIKE "%'.$request[keyword].'%" OR `payment_ref_num` LIKE "%'.$request[keyword].'%" ORDER BY payment_id DESC LIMIT '.$start.', '.$data[limit].';';
 		$count_query	= 'SELECT COUNT(*) FROM `payment` WHERE `payment_email` LIKE "%'.$request[keyword].'%" OR `payment_mobile` LIKE "%'.$request[keyword].'%" OR `payment_amount` LIKE "%'.$request[keyword].'%" OR `payment_res_num` LIKE "%'.$request[keyword].'%" OR `payment_ref_num` LIKE "%'.$request[keyword].'%" ';
+	}
+	elseif ($request[type] == 'date')
+	{
+		if($post[from])
+		{
+			$time_from = explode('/',$post[from]);
+			$time_from = pmktime(0,0,0,$time_from[1],$time_from[0],$time_from[2]);
+		}
+		else
+		{
+			$time_from = 0;
+		}
+		
+		if($post[to])
+		{
+			$time_to = explode('/',$post[to]);
+			$time_to = pmktime(23,59,59,$time_to[1],$time_to[0],$time_to[2]);
+		}
+		else
+		{
+			$time_to = time();
+		}
+		
+		$query			= 'SELECT * FROM `payment` WHERE `payment_amount` != "0" AND `payment_time` >= '.$time_from.' AND `payment_time` <= '.$time_to.' ORDER BY payment_id DESC LIMIT '.$start.', '.$data[limit].';';
+		$count_query	= 'SELECT COUNT(*) FROM `payment` WHERE `payment_amount` != "0"AND `payment_time` >= '.$time_from.' AND `payment_time` <= '.$time_to;
 	}
 	else
 	{
@@ -165,6 +197,8 @@ function payment_form ($data) {
 	$data[payment_gateway] = $db->retrieve('plugin_name','plugin','plugin_uniq',$data[payment_gateway]);
 	if ($data[payment_status] == 1) $data[payment_status] = 'کامل نشده'; else $data[payment_status] = 'کامل شده';
 ?>
+	<dt class="title">محصول:</dt>
+	<dt><?=$data[product_title]?></dt>
 	<dt class="title">ایمیل پرداخت کننده:</dt>
 	<dt><?=$data[payment_email]?></dt>
 	<dt class="title">شماره همراه پرداخت کننده:</dt>
@@ -183,8 +217,34 @@ function payment_form ($data) {
 	<dt><?=Convertnumber2farsi(pdate('d F Y ساعت G:i',$data[payment_time]))?></dt>
 	<dt class="title">آی‌‌پی‌:</dt>
 	<dt><?=$data[payment_ip]?></dt>
-	
 <?
+	if(isset($data[parsyar]))
+	{
+		if($data[parsyar]->type == 'pin')
+		{
+?>
+	<dt class="title">کارت‌ها:</dt>
+<?
+			foreach($data[parsyar]->products as $products)
+			{
+?>
+			<dt><? echo $products->serial . ':' . $products->pin?></dt>
+<?
+			}
+		}
+		elseif($data[parsyar]->type == 'topup')
+		{
+?>
+	<dt class="title">کد تراکنش تاپ آپ:</dt>
+	<dt><? echo $data[parsyar]->products[0]->topup_transaction_code?></dt>
+	<dt class="title">شماره شارژ شده:</dt>
+	<dt><? echo $data[parsyar]->mobile?></dt>
+	<dt class="title">مبلغ شارژ:</dt>
+	<dt><? echo convertnumber2farsi($data[parsyar]->products[0]->price)?> ریال</dt>
+<?
+		}
+	}
+
 	if ($cards)
 	{
 ?>
@@ -236,7 +296,10 @@ function payment_list ($payments,$data)
 	</div><br />
 	<div class="select-bar">
 	<b>جستجو:</b><br />
-		   <form method="post" action="payments.php"><input type="text" name="keyword" value="<?=$request[keyword]?>"> <input type="hidden" name="action" value="list"><input type="hidden" name="type" value="search"><input type="submit" value="بگرد" class="button"></form>
+	   <form method="post" action="payments.php"><input type="text" name="keyword" value="<?=$request[keyword]?>"> <input type="hidden" name="action" value="list"><input type="hidden" name="type" value="search"><input type="submit" value="بگرد" class="button"></form>
+		<br />
+		<b>انتخاب بازه:</b><br />
+	   <form method="post" action="payments.php">از تاریخ: <input type="text" id="datepicker12from" dir="ltr" name="from" value="<?=$request[from]?>"/> تا تاریخ: <input type="text" id="datepicker12to" dir="ltr" name="to" value="<?=$request[to]?>"/><input type="hidden" name="action" value="list"><input type="hidden" name="type" value="date"> <input type="submit" value="نمایش" class="button"></form>
 	</div>
 <?	include 'template/notify.php';	?>
 <script language="JavaScript">

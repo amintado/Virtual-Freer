@@ -167,6 +167,8 @@ class SmartMySQL {
     public function queryInsert($table, $data = array())
     {
         if (is_array($data)) {
+			$field = null;
+			$column = null;
             foreach ($data as $k => $v) {
                 $field .= '`' . $k . '`, ';
                 $column .= '\'' . $this->escape($v) . '\', ';
@@ -184,6 +186,7 @@ class SmartMySQL {
     public function queryUpdate($table, $data = array(), $other = null)
     {
         if (is_array($data)) {
+            $sql = null;
             foreach ($data as $k => $v) {
                 $v = '\''. $this->escape($v) .'\'';
                 $sql .= '`' . $k . '`' . ' = ' . $v . ', ';
@@ -235,6 +238,7 @@ class SmartMySQL {
 
     private function fetcher($query, $secrun = null)
     {
+		$ret = null;
         $res = $this->execute($query);
         if (is_null($secrun)) {
             $ret = @mysql_fetch_array($res, $this->fetchmode);

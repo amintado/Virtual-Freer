@@ -78,10 +78,10 @@ elseif ($request[action] == 'add')//--------------------------------------------
 				
 				$fp      			= fopen($files[file][tmp_name], 'r');
 				$content 			= fread($fp, filesize($files[file][tmp_name]));
-				$lines 				= split("\n", $content);
+				$lines 				= explode("\n", $content);
 				foreach($lines as $line)
 				{
-					$splited 				= split($post[separator], $line);
+					$splited 				= explode($post[separator], $line);
 					$data[card_first_field]	= trim($splited[0]);
 					$data[card_second_field]= trim($splited[1]);
 					$data[card_third_field]	= trim($splited[2]);
@@ -285,7 +285,7 @@ function card_form ($data) {
 	<dt><select name="product" size="1" class="field form" style="width: 323px">
 			<option value="">--</option>
 	<?
-		$query		= "SELECT * FROM `product` ORDER BY product_id ASC;";
+		$query		= "SELECT * FROM `product` WHERE `product_provider` = 'db' OR `product_provider` = '' ORDER BY product_id ASC;";
 		$products	= $db->fetchAll($query);
 		if($products)
 		{
@@ -354,7 +354,7 @@ function card_file ($data) {
 	<dt><select name="product" size="1" class="field form" style="width: 250px">
 			<option value="">--</option>
 	<?
-		$query		= "SELECT * FROM `product` ORDER BY product_id ASC;";
+		$query		= "SELECT * FROM `product` WHERE `product_provider` = 'db' OR `product_provider` = '' ORDER BY product_id ASC;";
 		$products	= $db->fetchAll($query);
 		if($products)
 		{

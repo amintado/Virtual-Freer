@@ -10,11 +10,7 @@
   as published by the Free Software Foundation.
 */
 	include '../include/configuration.php';
-if (check_login())//------------------------------------------ چک کردن لاگین بودن ادمین
-{
-	header('location:logout.php');
-	exit;
-}
+
 	if ($post[post] == 1) 
 	{
 		if (!$post[username])
@@ -55,7 +51,7 @@ function print_login_form() {
 	<dt class="title"><label for="username">نام کاربری:</label></dt>
 	<dt><input type="text" name="username" id="username" class="field form" value="<?=$post[username]?>" dir="ltr" size="50"></dt>
 	<dt class="title"><label for="password">کلمه عبور:</label></dt>
-	<dt><input type="password" name="password" id="password" class="field form" dir="ltr" size="50"></dt>
+	<dt><input type="password" name="password" id="password" class="field form" dir="ltr" size="50" autocomplete="off"></dt>
 	<input type="hidden" name="post" value="1" />
 	<input type="submit" name="submit" value="ورود" class="button">
 	</form>

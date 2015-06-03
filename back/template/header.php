@@ -140,6 +140,7 @@
 				<li><a href="setting.php">تنظیمات</a></li>
 				<li><a href="statistics.php">آمار</a></li>
 				<li><a href="plugins.php">افزونه‌ها</a></li>
+				<li><a href="http://parsyar.com" target="_blank">پارس‌یار</a></li>
 				<li><a href="logout.php">خروج</a></li>
 			</ul>
 <?

@@ -15,7 +15,7 @@ define('PRESENTATION_DIR', SITE_ROOT . '/templates/');
 define('BUSINESS_DIR', SITE_ROOT . '/business/');
 define('SMARTY_DIR', SITE_ROOT . '/include/libs/smarty/');
 define('TEMPLATE_DIR', PRESENTATION_DIR . 'templates');
-define('COMPILE_DIR', PRESENTATION_DIR . 'templates_c');
+define('COMPILE_DIR', ($config['smarty']['compile_dir'] != '') ? $config['smarty']['compile_dir'] : PRESENTATION_DIR . 'templates_c');
 define('CONFIG_DIR', SITE_ROOT . '/include/smartyConfigs');
 //------------------- Ready to use
 require_once SITE_ROOT . '/include/libs/startSmarty.php';

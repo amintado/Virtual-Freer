@@ -12,6 +12,12 @@
 session_start();
 ob_start();
 //-------------------------------------------- Include required files
+error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+date_default_timezone_set('Asia/Tehran');
+if($page != 'callback')
+{
+	require_once 'csrf-magic.php';
+}
 require_once 'funks.php';
 require_once 'pdf.php';
 require_once 'libs/class.smartmysql.php';
@@ -19,7 +25,7 @@ require_once 'libs/class.smartmysql.php';
 $now = time();
 //---------------------- Conect To DB ------------------
 $db = new SmartMySQL();
-$db->connect($config[databaseInfo][host], $config[databaseInfo][username],  $config[databaseInfo][password],  $config[databaseInfo][name]);
+$db->connect($config['databaseInfo']['host'], $config['databaseInfo']['username'],  $config['databaseInfo']['password'],  $config['databaseInfo']['name']);
 mysql_query("SET NAMES 'utf8'");
 mysql_query("SET CHARACTER SET utf8");
 mysql_query("SET SESSION collation_connection = 'utf8_persian_ci'");

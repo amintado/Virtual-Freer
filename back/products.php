@@ -24,6 +24,8 @@ if (!check_login())//------------------------------------------ چک کردن ل
 	$data[product_second_field_title]	= $post[second_field_title];
 	$data[product_third_field_title]	= $post[third_field_title];
 	$data[product_price]				= $post[price];
+	$data[product_provider]				= $post[provider];
+	$data[product_product_id]			= $post[product_id];
 	$data[product_category]				= $post[category];
 	$data[product_ip]					= $server[remote_address];
 	
@@ -46,12 +48,19 @@ elseif ($request[action] == 'add')//--------------------------------------------
 	{
 		if (!$post[title])
 			$error 	.= 'عنوان محصول را وارد کنید.<br />';
-		if (!$post[price])
-			$error 	.= 'قیمت محصول را وارد کنید.<br />';
-		elseif (filter_var($post[price], FILTER_VALIDATE_INT)== false)
-			$error 	.= 'قیمت فقط باید شامل اعداد باشد.<br />';
+		if ($post[provider] != 'parsyar'  OR ($post[provider] == 'parsyar' AND ($post[product_id] < 20 OR $post[product_id] > 23)))
+		{
+			if (!$post[price])
+				$error 	.= 'قیمت محصول را وارد کنید.<br />';
+			elseif (filter_var($post[price], FILTER_VALIDATE_INT)== false)
+				$error 	.= 'قیمت فقط باید شامل اعداد باشد.<br />';
+		}
 		if (!$post[category])
 			$error 	.= 'دسته محصول را انتخاب کنید.<br />';
+		if (!$post[provider])
+			$error 	.= 'تامین کننده را انتخاب کنید.<br />';
+		if ($post[provider] != 'db' AND $post[provider] != '' AND !$post[product_id])
+			$error 	.= 'کد محصول تامین کننده را وارد کنید.<br />';
 		if (!$error)
 		{
 			$data[product_time] = $now;
@@ -84,12 +93,19 @@ elseif (($request[action] == 'edit') AND (check_product_exist($request[id])))//-
 	{
 		if (!$post[title])
 			$error 	.= 'عنوان محصول را وارد کنید.<br />';
-		if (!$post[price])
-			$error 	.= 'قیمت محصول را وارد کنید.<br />';
-		elseif (filter_var($post[price], FILTER_VALIDATE_INT)== false)
-			$error 	.= 'قیمت فقط باید شامل اعداد باشد.<br />';
+		if ($post[provider] != 'parsyar'  OR ($post[provider] == 'parsyar' AND ($post[product_id] < 20 OR $post[product_id] > 23)))
+		{
+			if (!$post[price])
+				$error 	.= 'قیمت محصول را وارد کنید.<br />';
+			elseif (filter_var($post[price], FILTER_VALIDATE_INT)== false)
+				$error 	.= 'قیمت فقط باید شامل اعداد باشد.<br />';
+		}
 		if (!$post[category])
 			$error 	.= 'دسته محصول را انتخاب کنید.<br />';
+		if (!$post[provider])
+			$error 	.= 'تامین کننده را انتخاب کنید.<br />';
+		if ($post[provider] != '' AND $post[provider] != 'db'  AND !$post[product_id])
+			$error 	.= 'کد محصول تامین کننده را وارد کنید.<br />';
 		if (!$error)
 		{
 			//-------------------------------------- ویرایش اطلاعات
@@ -228,12 +244,47 @@ function product_form ($data) {
 	<dt class="title"><label for="third_field_title">عنوان فیلد سوم:</label></dt>
 	<dt><input type="text" name="third_field_title" id="third_field_title" class="field form" value="<?=$data[product_third_field_title]?>" size="60"></dt>
 	<dt class="title"><label for="price">قیمت:</label></dt>
-	<dt><input type="text" name="price" id="price" class="field form" value="<?=$data[product_price]?>" size="6"> ریال</dt>
+	<dt><input type="text" name="price" id="price" class="field form" value="<?=$data[product_price]?>" size="6" dir="ltr"> ریال</dt>
 	<dt class="title"><label for="category">دسته :</label></dt>
-	<dt><select name="category" size="1" class="field form" style="width: 325px">
+	<dt><select name="category" id="category" size="1" class="field form" style="width: 325px">
 			<option value="">--</option>
 			<?=get_cat_option($parent_data,$data[product_category])?>
 	</select></dt>
+	<dt class="title"><label for="provider">تامین کننده: </label></dt>
+	<dt><select name="provider" id="provider" size="1" class="field form" style="width: 325px">
+		<option value="">--</option>
+		<option value="db"<? if($data[product_provider] == 'db') echo ' selected'; ?>>دیتابیس محلی</option>
+		<option value="parsyar"<? if($data[product_provider] == 'parsyar') echo ' selected'; ?>>پارس‌یار</option>
+	</select></dt>
+	<div id="remote_product_id">
+		<dt class="title"><label for="product_id">کد محصول: </label></dt>
+		<dt><input type="text" name="product_id" id="product_id" class="field form" value="<?=$data[product_product_id]?>" size="6" dir="ltr"></dt>
+	</div>
+
+<script>
+    $(document).ready(function()
+    {
+        provider();
+        $('select#provider').change(function ()
+        {
+            provider();
+        });
+        function provider()
+        {
+            var provider = $("select#provider option:selected").val();
+            
+            if(provider != 'db' && provider != '')
+            {
+				$('div[id="remote_product_id"]').slideDown();
+			}
+			else
+			{
+				$('div[id="remote_product_id"]').slideUp();
+			}
+			
+		}
+    });
+</script>
 	<dt class="title"><label for="image">تصویر:</label></dt>
 	<dt><input type="file" name="image" class="file form" size="47"><br />
 <?

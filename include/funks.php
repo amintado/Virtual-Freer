@@ -23,7 +23,7 @@ function cleaner($input)
 		}
 		else
 		{
-			$output = htmlspecialchars(trim($input),ENT_QUOTES);
+			$output = htmlspecialchars(xss_clean($input),ENT_QUOTES);
 		}
 		return $output;
 	}
@@ -116,40 +116,53 @@ function get_rand_id($length)
 } 
 
 //---------------------- Send mail Function------------------
-function send_mail($from_email,$from_name,$to_email,$to_name,$subject,$body,$signature,$attachment=null) {
-	require_once('libs/class.phpmailer.php');
-	if ($signature)
-		$signature = '
-			<tr>
-				<td style="background-color:#3a3a3a; padding:5px; direction:rtl; text-align:right; font-size: 10px; font-family:tahoma; color:#E0E0E0">'.$signature.'</td>
-			</tr>';
-	
-	$mail_body = '
-		<table style="margin-left:auto; margin-right:auto; width:80%; border:0px;">
-			<tr>
-				<td style="background-color:#3a3a3a; padding:5px; direction:rtl; text-align:right; font-size: 12px; font-family:tahoma; font-weight:bold; color:#E0E0E0">'.$from_name.'</td>
-			</tr>
-			<tr>
-				<td style="background-color:#f5f5f5; padding:25px; border: 1px solid #c6c6c6; direction:rtl; text-align:right; font-size: 12px; font-family:tahoma; color:#3a3a3a">'.$body.'</td>
-			</tr>'.$signature.'
-		</table>';
-	$mail = new PHPMailer(true); //defaults to using php "mail()"; the true param means it will throw exceptions on errors, which we need to catch
-	try {
-	  $mail->AddReplyTo($from_email, $from_name);
-	  $mail->SetFrom($from_email, $from_name);
-	  $mail->AddAddress($to_email, $to_name);
-	  $mail->CharSet = 'UTF-8';
-	  $mail->Subject = $subject;
-	  $mail->AltBody = 'To view the message, please use an HTML compatible email viewer!'; // optional - MsgHTML will create an alternate automatically
-	  $mail->MsgHTML($mail_body);
-	  if ($attachment)
-	  	$mail->AddAttachment($attachment);
-	  $mail->Send();
-	  return 1;
-	} catch (phpmailerException $e) {
-	  echo $e->errorMessage(); //Pretty error messages from PHPMailer
-	} catch (Exception $e) {
-	  echo $e->getMessage(); //Boring error messages from anything else!
+function send_mail($from_email,$from_name,$to_email,$to_name,$subject,$body,$signature,$host=null,$port='25',$username=null,$password=null,$attachment=null)
+{
+	if ($to_email AND filter_var($to_email, FILTER_VALIDATE_EMAIL)== true)
+	{
+		require_once('libs/class.phpmailer.php');
+		if ($signature)
+			$signature = '
+				<tr>
+					<td style="background-color:#3a3a3a; padding:5px; direction:rtl; text-align:right; font-size: 10px; font-family:tahoma; color:#E0E0E0">'.$signature.'</td>
+				</tr>';
+		
+		$mail_body = '
+			<table style="margin-left:auto; margin-right:auto; width:80%; border:0px;">
+				<tr>
+					<td style="background-color:#3a3a3a; padding:5px; direction:rtl; text-align:right; font-size: 12px; font-family:tahoma; font-weight:bold; color:#E0E0E0">'.$from_name.'</td>
+				</tr>
+				<tr>
+					<td style="background-color:#f5f5f5; padding:25px; border: 1px solid #c6c6c6; direction:rtl; text-align:right; font-size: 12px; font-family:tahoma; color:#3a3a3a">'.$body.'</td>
+				</tr>'.$signature.'
+			</table>';
+		$mail = new PHPMailer(true); //defaults to using php "mail()"; the true param means it will throw exceptions on errors, which we need to catch
+		try {
+		  if ($host AND $username AND $password)
+		  {
+			$mail->IsSMTP(); // enable SMTP
+			$mail->SMTPAuth = true;  // authentication enabled
+			$mail->Host = $host;
+			$mail->Port = $port; 
+			$mail->Username = $username;  
+			$mail->Password = $password;
+		  }
+		  $mail->AddReplyTo($from_email, $from_name);
+		  $mail->SetFrom($from_email, $from_name);
+		  $mail->AddAddress($to_email, $to_name);
+		  $mail->CharSet = 'UTF-8';
+		  $mail->Subject = $subject;
+		  $mail->AltBody = 'To view the message, please use an HTML compatible email viewer!'; // optional - MsgHTML will create an alternate automatically
+		  $mail->MsgHTML($mail_body);
+		  if ($attachment)
+			$mail->AddAttachment($attachment);
+		  $mail->Send();
+		  return 1;
+		} catch (phpmailerException $e) {
+		  echo $e->errorMessage(); //Pretty error messages from PHPMailer
+		} catch (Exception $e) {
+		  echo $e->getMessage(); //Boring error messages from anything else!
+		}
 	}
 }
 //---------------------- Get mellat error string Function------------------
@@ -157,146 +170,147 @@ function check_mellat_state_error($ResCode)
 {
 	switch($ResCode){
 		case '0' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; &#1576;&#1575; &#1605;&#1608;&#1601;&#1602;&#1610;&#1578; &#1575;&#1606;&#1580;&#1575;&#1605; &#1588;&#1583;.";
+			$prompt="تراکنش با موفقيت انجام شد.";
 			break;
 		case '11' :
-			$prompt="&#1588;&#1605;&#1575;&#1585;&#1607; &#1705;&#1575;&#1585;&#1578; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="شماره کارت نامعتبر است.";
 			break;
 		case '12' :
-			$prompt="&#1605;&#1608;&#1580;&#1608;&#1583;&#1610; &#1705;&#1575;&#1601;&#1610; &#1606;&#1610;&#1587;&#1578;.";
+			$prompt="موجودي کافي نيست.";
 			break;
 		case '13' :
-			$prompt="&#1585;&#1605;&#1586; &#1606;&#1575;&#1583;&#1585;&#1587;&#1578; &#1575;&#1587;&#1578;.";
+			$prompt="رمز نادرست است.";
 			break;
 		case '14' :
-			$prompt="&#1578;&#1593;&#1583;&#1575;&#1583; &#1583;&#1601;&#1593;&#1575;&#1578; &#1608;&#1575;&#1585;&#1583; &#1705;&#1585;&#1583;&#1606; &#1585;&#1605;&#1586; &#1662;&#1610;&#1588; &#1575;&#1586; &#1581;&#1583; &#1605;&#1580;&#1575;&#1586; &#1575;&#1587;&#1578;.";
+			$prompt="تعداد دفعات وارد کردن رمز پيش از حد مجاز است.";
 			break;
 		case '15' :
-			$prompt="&#1705;&#1575;&#1585;&#1578; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585;&#1575;&#1587;&#1578;.";
+			$prompt="کارت نامعتبراست.";
 			break;
 		case '17' :
-			$prompt="&#1705;&#1575;&#1585;&#1576;&#1585; &#1575;&#1586; &#1575;&#1606;&#1580;&#1575;&#1605; &#1578;&#1585;&#1575;&#1705;&#1606;&#1588; &#1605;&#1606;&#1589;&#1585;&#1601; &#1588;&#1583;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="کاربر از انجام تراکنش منصرف شده است.";
 			break;
 		case '18' :
-			$prompt="&#1578;&#1575;&#1585;&#1610;&#1582; &#1575;&#1606;&#1602;&#1590;&#1575;&#1610; &#1705;&#1575;&#1585;&#1578; &#1711;&#1584;&#1588;&#1578;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="تاريخ انقضاي کارت گذشته است.";
 			break;
 		case '111' :
-			$prompt="&#1589;&#1575;&#1583;&#1585;&#1705;&#1606;&#1606;&#1583;&#1607; &#1705;&#1575;&#1585;&#1578; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="صادرکننده کارت نامعتبر است.";
 			break;
 		case '112' :
-			$prompt="&#1582;&#1591;&#1575;&#1610; &#1587;&#1608;&#1610;&#1610;&#1670; &#1589;&#1575;&#1583;&#1585;&#1705;&#1606;&#1606;&#1583;&#1607; &#1705;&#1575;&#1585;&#1578;.";
+			$prompt="خطاي سوييچ صادرکننده کارت.";
 			break;
 		case '113' :
-			$prompt="&#1662;&#1575;&#1587;&#1582; &#1575;&#1586; &#1589;&#1575;&#1583;&#1585;&#1705;&#1606;&#1606;&#1583;&#1607; &#1705;&#1575;&#1585;&#1578; &#1583;&#1585;&#1610;&#1575;&#1601;&#1578; &#1606;&#1588;&#1583;.";
+			$prompt="پاسخ از صادرکننده کارت دريافت نشد.";
 			break;
 		case '114' :
-			$prompt="&#1583;&#1575;&#1585;&#1606;&#1583;&#1607; &#1705;&#1575;&#1585;&#1578; &#1605;&#1580;&#1575;&#1586; &#1576;&#1607; &#1575;&#1606;&#1580;&#1575;&#1605; &#1575;&#1610;&#1606; &#1578;&#1585;&#1575;&#1705;&#1606;&#1588; &#1606;&#1610;&#1587;&#1578;.";
+			$prompt="دارنده کارت مجاز به انجام اين تراکنش نيست.";
 			break;
 		case '21' :
-			$prompt="&#1662;&#1584;&#1610;&#1585;&#1606;&#1583;&#1607; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="پذيرنده نامعتبر است.";
 			break;
 		case '22' :
-			$prompt="&#1578;&#1585;&#1605;&#1610;&#1606;&#1575;&#1604; &#1605;&#1580;&#1608;&#1586; &#1575;&#1585;&#1575;&#1574;&#1607; &#1587;&#1585;&#1608;&#1610;&#1587; &#1583;&#1585;&#1582;&#1608;&#1575;&#1587;&#1578;&#1610; &#1585;&#1575; &#1606;&#1583;&#1575;&#1585;&#1583;.";
+			$prompt="ترمينال مجوز ارائه سرويس درخواستي را ندارد.";
 			break;
 		case '23' :
-			$prompt="&#1582;&#1591;&#1575;&#1610; &#1575;&#1605;&#1606;&#1610;&#1578;&#1610; &#1585;&#1582; &#1583;&#1575;&#1583;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="خطاي امنيتي رخ داده است.";
 			break;
 		case '24' :
-			$prompt="&#1575;&#1591;&#1604;&#1575;&#1593;&#1575;&#1578; &#1705;&#1575;&#1585;&#1576;&#1585;&#1610; &#1662;&#1584;&#1610;&#1585;&#1606;&#1583;&#1607; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="اطلاعات کاربري پذيرنده نامعتبر است.";
 			break;
 		case '25' :
-			$prompt="&#1605;&#1576;&#1604;&#1594; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="مبلغ نامعتبر است.";
 			break;
 		case '31' :
-			$prompt="&#1662;&#1575;&#1587;&#1582; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="پاسخ نامعتبر است.";
 			break;
 		case '32' :
-			$prompt="&#1601;&#1585;&#1605;&#1578; &#1575;&#1591;&#1604;&#1575;&#1593;&#1575;&#1578; &#1608;&#1575;&#1585;&#1583; &#1588;&#1583;&#1607; &#1589;&#1581;&#1610;&#1581; &#1606;&#1610;&#1587;&#1578;.";
+			$prompt="فرمت اطلاعات وارد شده صحيح نيست.";
 			break;
 		case '33' :
-			$prompt="&#1581;&#1587;&#1575;&#1576; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="حساب نامعتبر است.";
 			break;
 		case '34' :
-			$prompt="&#1582;&#1591;&#1575;&#1610; &#1587;&#1610;&#1587;&#1578;&#1605;&#1610;.";
+			$prompt="خطاي سيستمي.";
 			break;
 		case '35' :
-			$prompt="&#1578;&#1575;&#1585;&#1610;&#1582; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="تاريخ نامعتبر است.";
 			break;
 		case '41' :
-			$prompt="&#1588;&#1605;&#1575;&#1585;&#1607; &#1583;&#1585;&#1582;&#1608;&#1575;&#1587;&#1578; &#1578;&#1705;&#1585;&#1575;&#1585;&#1610; &#1575;&#1587;&#1578;.";
+			$prompt="شماره درخواست تکراري است.";
 			break;
 		case '42' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; sale &#1610;&#1575;&#1601;&#1578; &#1606;&#1588;&#1583;.";
+			$prompt="تراکنش sale يافت نشد.";
 			break;
 		case '43' :
-			$prompt="&#1602;&#1576;&#1604;&#1575; &#1583;&#1585;&#1582;&#1608;&#1575;&#1587;&#1578; verify &#1583;&#1575;&#1583;&#1607; &#1588;&#1583;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="قبلا درخواست verify داده شده است.";
 			break;
 		case '44' :
-			$prompt="&#1583;&#1585;&#1582;&#1608;&#1575;&#1587;&#1578; verify  &#1610;&#1575;&#1601;&#1578; &#1606;&#1588;&#1583;.";
+			$prompt="درخواست verify  يافت نشد.";
 			break;
 		case '45' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; settle &#1588;&#1583;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="تراکنش settle شده است.";
 			break;
 		case '46' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; settle &#1606;&#1588;&#1583;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="تراکنش settle نشده است.";
 			break;
 		case '47' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; settle &#1610;&#1575;&#1601;&#1578; &#1606;&#1588;&#1583;.";
+			$prompt="تراکنش settle يافت نشد.";
 			break;
 		case '48' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; reverse &#1588;&#1583;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="تراکنش reverse شده است.";
 			break;
 		case '49' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; refund &#1610;&#1575;&#1601;&#1578; &#1606;&#1588;&#1583;.";
+			$prompt="تراکنش refund يافت نشد.";
 			break;
 		case '412' :
-			$prompt="&#1588;&#1606;&#1575;&#1587;&#1607; &#1602;&#1576;&#1590; &#1606;&#1575;&#1583;&#1585;&#1587;&#1578; &#1575;&#1587;&#1578;.";
+			$prompt="شناسه قبض نادرست است.";
 			break;
 		case '413' :
-			$prompt="&#1588;&#1606;&#1575;&#1587;&#1607; &#1662;&#1585;&#1583;&#1575;&#1582;&#1578; &#1606;&#1575;&#1583;&#1585;&#1587;&#1578; &#1575;&#1587;&#1578;.";
+			$prompt="شناسه پرداخت نادرست است.";
 			break;
 		case '414' :
-			$prompt="&#1587;&#1575;&#1586;&#1605;&#1575;&#1606; &#1589;&#1575;&#1583;&#1585;&#1705;&#1606;&#1606;&#1583;&#1607; &#1602;&#1576;&#1590; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="سازمان صادرکننده قبض نامعتبر است.";
 			break;
 		case '415' :
-			$prompt="&#1586;&#1605;&#1575;&#1606; &#1580;&#1604;&#1587;&#1607; &#1705;&#1575;&#1585;&#1610; &#1576;&#1607; &#1662;&#1575;&#1610;&#1575;&#1606; &#1585;&#1587;&#1610;&#1583;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="زمان جلسه کاري به پايان رسيده است.";
 			break;
 		case '416' :
-			$prompt="&#1582;&#1591;&#1575; &#1583;&#1585; &#1579;&#1576;&#1578; &#1575;&#1591;&#1604;&#1575;&#1593;&#1575;&#1578;.";
+			$prompt="خطا در ثبت اطلاعات.";
 			break;
 		case '417' :
-			$prompt="&#1588;&#1606;&#1575;&#1587;&#1607; &#1662;&#1585;&#1583;&#1575;&#1582;&#1578; &#1705;&#1606;&#1606;&#1583;&#1607; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585;&#1575;&#1587;&#1578;.";
+			$prompt="شناسه پرداخت کننده نامعتبراست.";
 			break;
 		case '418' :
-			$prompt="&#1575;&#1588;&#1705;&#1575;&#1604; &#1583;&#1585; &#1578;&#1593;&#1585;&#1610;&#1601; &#1575;&#1591;&#1604;&#1575;&#1593;&#1575;&#1578; &#1605;&#1588;&#1578;&#1585;&#1610;.";
+			$prompt="اشکال در تعريف اطلاعات مشتري.";
 			break;
 		case '419' :
-			$prompt="&#1578;&#1593;&#1583;&#1575;&#1583; &#1583;&#1601;&#1593;&#1575;&#1578; &#1608;&#1585;&#1608;&#1583; &#1575;&#1591;&#1604;&#1575;&#1593;&#1575;&#1578; &#1575;&#1586; &#1581;&#1583; &#1605;&#1580;&#1575;&#1586; &#1711;&#1584;&#1588;&#1578;&#1607; &#1575;&#1587;&#1578;.";
+			$prompt="تعداد دفعات ورود اطلاعات از حد مجاز گذشته است.";
 			break;
 		case '421' :
-			$prompt="IP &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="IP نامعتبر است.";
 			break;
 		case '51' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; &#1578;&#1705;&#1585;&#1575;&#1585;&#1610; &#1575;&#1587;&#1578;.";
+			$prompt="تراکنش تکراري است.";
 			break;
 		case '52' :
-			$prompt="&#1587;&#1585;&#1608;&#1610;&#1587; &#1583;&#1585;&#1582;&#1608;&#1575;&#1587;&#1578;&#1610; &#1605;&#1608;&#1580;&#1608;&#1583; &#1606;&#1605;&#1610; &#1576;&#1575;&#1588;&#1583;.";
+			$prompt="سرويس درخواستي موجود نمي باشد.";
 			break;
 		case '54' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; &#1605;&#1585;&#1580;&#1593; &#1605;&#1608;&#1580;&#1608;&#1583; &#1606;&#1610;&#1587;&#1578;.";
+			$prompt="تراکنش مرجع موجود نيست.";
 			break;
 		case '55' :
-			$prompt="&#1578;&#1585;&#1575;&#1705;&#1606;&#1588; &#1606;&#1575;&#1605;&#1593;&#1578;&#1576;&#1585; &#1575;&#1587;&#1578;.";
+			$prompt="تراکنش نامعتبر است.";
 			break;
 		case '61' :
-			$prompt="&#1582;&#1591;&#1575; &#1583;&#1585; &#1608;&#1575;&#1585;&#1610;&#1586;.";
+			$prompt="خطا در واريز.";
 			break;
 		DEFAULT :
-			$prompt="&#1582;&#1591;&#1575;&#1610; &#1606;&#1575;&#1605;&#1588;&#1582;&#1589;.";
+			$prompt="خطاي نامشخص.";
 			break;
 	}
-	return  '&#1705;&#1583; ' . $ResCode .' : '. $prompt;
+	return  'کد ' . $ResCode .' : '. $prompt;
 }
+
 //---------------------- xml2array Function------------------
 function xml2array($contents, $get_attributes=1, $priority = 'tag') {
     if(!$contents) return array();
@@ -420,4 +434,33 @@ function xml2array($contents, $get_attributes=1, $priority = 'tag') {
     }
     
     return($xml_array);
+}
+//---------------------- xss_clean Function------------------
+function xss_clean($data)
+{
+	$data = str_replace(array('&amp;','&lt;','&gt;'), array('&amp;amp;','&amp;lt;','&amp;gt;'), $data);
+	$data = preg_replace('/(&#*\w+)[\x00-\x20]+;/u', '$1;', $data);
+	$data = preg_replace('/(&#x*[0-9A-F]+);*/iu', '$1;', $data);
+	$data = html_entity_decode($data, ENT_COMPAT, 'UTF-8');
+
+	$data = preg_replace('#(<[^>]+?[\x00-\x20"\'])(?:on|xmlns)[^>]*+>#iu', '$1>', $data);
+
+	$data = preg_replace('#([a-z]*)[\x00-\x20]*=[\x00-\x20]*([`\'"]*)[\x00-\x20]*j[\x00-\x20]*a[\x00-\x20]*v[\x00-\x20]*a[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2nojavascript...', $data);
+	$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*v[\x00-\x20]*b[\x00-\x20]*s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:#iu', '$1=$2novbscript...', $data);
+	$data = preg_replace('#([a-z]*)[\x00-\x20]*=([\'"]*)[\x00-\x20]*-moz-binding[\x00-\x20]*:#u', '$1=$2nomozbinding...', $data);
+
+	$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?expression[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
+	$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?behaviour[\x00-\x20]*\([^>]*+>#i', '$1>', $data);
+	$data = preg_replace('#(<[^>]+?)style[\x00-\x20]*=[\x00-\x20]*[`\'"]*.*?s[\x00-\x20]*c[\x00-\x20]*r[\x00-\x20]*i[\x00-\x20]*p[\x00-\x20]*t[\x00-\x20]*:*[^>]*+>#iu', '$1>', $data);
+
+	$data = preg_replace('#</*\w+:\w[^>]*+>#i', '', $data);
+
+	do
+	{
+			$old_data = $data;
+			$data = preg_replace('#</*(?:applet|b(?:ase|gsound|link)|embed|frame(?:set)?|i(?:frame|layer)|l(?:ayer|ink)|meta|object|s(?:cript|tyle)|title|xml)[^>]*+>#i', '', $data);
+	}
+	while ($old_data !== $data);
+
+	return $data;
 }
